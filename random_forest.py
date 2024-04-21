@@ -6,6 +6,7 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import LeaveOneOut, cross_val_score, cross_val_predict
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.ensemble import RandomForestClassifier
 
 # set seed
 random.seed(72)
@@ -30,6 +31,7 @@ encoded_labels = encode.fit_transform(labels) # label encoding
 
 ##### EVALUATE #####
 # TODO: define model
+model = RandomForestClassifier(n_estimators=100)
 
 # leave one out cross validation
 loo = LeaveOneOut()
@@ -56,5 +58,10 @@ sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
 plt.xlabel('Predicted Labels')
 plt.ylabel('True Labels')
 plt.title('Confusion Matrix')
-plt.show()
+plt.savefig('random_forest_confusion_matrix')
 
+# output
+# Mean Score: 0.9642857142857143
+# Accuracy: 0.9642857142857143
+# Precision: 0.9642857142857143
+# Recall: 1.0
