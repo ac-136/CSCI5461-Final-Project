@@ -26,7 +26,7 @@ class MyMLP():
     # l2_reg - regularization
     # loss - loss function ('binary_crossentropy' for binary classification)
     # optim - optimization function
-    def __init__(self, hidden_size, max_epochs, dropout_rate=0.2, l2_reg=0.1, loss='binary_crossentropy', optim='adam'):
+    def __init__(self, hidden_size, max_epochs, dropout_rate=0.2, l2_reg=0.1, loss='binary_crossentropy', optim='adagrad'):
         self.hidden_size = hidden_size
         self.max_epochs = max_epochs
         self.optim = optim
@@ -37,8 +37,9 @@ class MyMLP():
         self.mlp = Sequential()
         
         # define layers
-        self.mlp.add(Dense(self.hidden_size, activation='relu', kernel_regularizer=regularizers.l2(self.l2_reg)))
-        self.mlp.add(Dropout(self.dropout_rate))
+        self.mlp.add(Dense(self.hidden_size, activation='relu'))
+        # self.mlp.add(Dense(self.hidden_size, activation='relu', kernel_regularizer=regularizers.l2(self.l2_reg)))
+        # self.mlp.add(Dropout(self.dropout_rate))
         self.mlp.add(Dense(1, activation='sigmoid'))
         
     def train(self, train_readout, train_target):
@@ -66,7 +67,7 @@ class MyMLP():
 
         # round preds for binary classification
         predicted_labels = np.round(predictions).astype(int)
-        
+
         # calc accuracy
         accuracy = accuracy_score(test_target, predicted_labels)
         print("Test Accuracy: ", accuracy)

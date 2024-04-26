@@ -36,6 +36,19 @@ labels = patient_labels[:, 1] # just labels
 encode = LabelEncoder()
 encoded_labels = encode.fit_transform(labels) # label encoding
 
+# create duplicates samples for Adenosquamous carcinoma (x10)
+dup_indices = np.where(encoded_labels == 0)[0]
+oversampled_features = np.concatenate((features, features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices], features[dup_indices]), axis=0)
+oversampled_labels = np.concatenate((encoded_labels, encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices], encoded_labels[dup_indices]), axis=0)
+
+print(features.shape)
+print(oversampled_features.shape)
+print()
+
+# shuffle
+shuffle_indices = np.random.permutation(oversampled_features.shape[0])
+shuffled_oversampled_features = oversampled_features[shuffle_indices]
+shuffled_oversampled_labels = oversampled_labels[shuffle_indices]
 
 ##### EVALUATE #####
 model = MyMLP(20, 100)
@@ -50,22 +63,22 @@ false_positives = 0
 false_negatives = 0
 true_negatives = 0
 
-for train_index, test_index in loo.split(features):
+for train_index, test_index in loo.split(shuffled_oversampled_features):
     # split data
-    train_features, test_features = features[train_index], features[test_index]
-    train_labels, test_labels = encoded_labels[train_index], encoded_labels[test_index]
-    
+    train_features, test_features = shuffled_oversampled_features[train_index], shuffled_oversampled_features[test_index]
+    train_labels, test_labels = shuffled_oversampled_labels[train_index], shuffled_oversampled_labels[test_index]
+
     # train model
     train_loss = model.train(train_features, train_labels)
 
     # test model
     pred, accuracy = model.test(test_features, test_labels)
     accuracy_scores.append(accuracy)
-
+    
     # Accumulate true positives, false positives, true negatives, and false negatives
     if test_labels[0] == 1 and pred[0][0] == 1:
         true_positives += 1
-        print("true postive")
+        print("true pos")
         print()
     elif test_labels[0] == 0 and pred[0][0] == 1:
         false_positives += 1
