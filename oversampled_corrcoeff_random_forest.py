@@ -36,6 +36,14 @@ shuffle_indices = np.random.permutation(oversampled_features.shape[0])
 shuffled_oversampled_features = oversampled_features[shuffle_indices]
 shuffled_oversampled_labels = oversampled_labels[shuffle_indices]
 
+# CORRELATION COEFFICIENTS
+np.seterr(divide='ignore')
+# Calculate correlation coefficients
+correlation_coefficients = np.abs(np.corrcoef(features, encoded_labels, rowvar=False)[:-1, -1])
+# Sort features based on correlation coefficients
+sorted_indices = np.argsort(correlation_coefficients)[::-1]  # Sort in descending order
+selected_features = features[:, sorted_indices[:100]]  # Select top 100 features (adjust this as needed)
+
 ##### EVALUATE #####
 # TODO: define model
 model = RandomForestClassifier(n_estimators=100)
@@ -65,7 +73,7 @@ sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
 plt.xlabel('Predicted Labels')
 plt.ylabel('True Labels')
 plt.title('Confusion Matrix')
-plt.savefig('oversampled_random_forest_confusion_matrix')
+plt.savefig('oversampled_corrcoeff_random_forest_confusion_matrix')
 
 # output
 # Mean Score: 1.0
