@@ -6,6 +6,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, confu
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+from imblearn.over_sampling import SMOTE, ADASYN
 
 # Load the data
 mrna_data = pd.read_csv('mRNA_RSEM_UQ_log2_Tumor.cct', sep='\t', index_col=0)
@@ -38,13 +39,28 @@ for train_index, test_index in loo.split(features):
     train_features, test_features = features[train_index], features[test_index]
     train_labels, test_labels = encoded_labels[train_index], encoded_labels[test_index]
 
-    dup_indices = np.where(train_labels == 0)[0]
-    oversampled_features = np.concatenate([train_features] + [train_features[dup_indices]]*20, axis=0)
-    oversampled_labels = np.concatenate([train_labels] + [train_labels[dup_indices]]*20, axis=0)
+    # Under sample
+    del_indices = np.where(train_labels == 1)[0]
+    del_indices = np.random.choice(del_indices, 130, replace=False)
+    undersampled_features = np.delete(train_features, del_indices, axis=0)
+    undersampled_labels = np.delete(train_labels, del_indices, axis=0)
 
+    # print(undersampled_features.shape)
+
+    oversample = SMOTE(k_neighbors=3, sampling_strategy='auto', random_state=72)
+    oversampled_features, oversampled_labels = oversample.fit_resample(undersampled_features, undersampled_labels)
+
+    # if test_labels[0] == 0:
+    #     oversample = SMOTE(k_neighbors=3, sampling_strategy=1, random_state=72)
+    #     oversampled_features, oversampled_labels = oversample.fit_resample(trained_features, trained_labels)
+    # else:
+    #     oversample = SMOTE(k_neighbors=4, sampling_strategy=1, random_state=72)
+    #     oversampled_features, oversampled_labels = oversample.fit_resample(trained_features, trained_labels)
+    
     shuffle_indices = np.random.permutation(oversampled_features.shape[0])
     shuffled_oversampled_features = oversampled_features[shuffle_indices]
     shuffled_oversampled_labels = oversampled_labels[shuffle_indices]
+
 
     # Train model
     model.fit(shuffled_oversampled_features, shuffled_oversampled_labels)
@@ -52,11 +68,11 @@ for train_index, test_index in loo.split(features):
     # Test model
     predictions = model.predict(test_features)
 
-    # print(shuffled_oversampled_features.shape)
-    # print(shuffled_oversampled_labels.shape)
-    # print(test_labels)
-    # print(predictions)
-    # print()
+    print(shuffled_oversampled_features.shape)
+    print(shuffled_oversampled_labels.shape)
+    print(test_labels)
+    print(predictions)
+    print()
 
     if test_labels[0] == 1 and predictions[0] == 1:
         true_positives += 1
@@ -70,7 +86,7 @@ for train_index, test_index in loo.split(features):
 # Evaluate model
 precision = true_positives / (true_positives + false_positives) if true_positives + false_positives > 0 else 0
 recall = true_positives / (true_positives + false_negatives) if true_positives + false_negatives > 0 else 0
-accuracy = (true_positives + true_negatives) / len(shuffled_oversampled_features)
+accuracy = (true_positives + true_negatives) / len(features)
 
 print(f"Accuracy: {accuracy:.2f}")
 print(f"Precision: {precision:.2f}")
