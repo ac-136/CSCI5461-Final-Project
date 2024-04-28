@@ -6,6 +6,7 @@ import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import LeaveOneOut, cross_val_score, cross_val_predict
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
 
 # set seed
 random.seed(72)
@@ -30,6 +31,7 @@ encoded_labels = encode.fit_transform(labels) # label encoding
 
 ##### EVALUATE #####
 # TODO: define model
+model = KNeighborsClassifier(n_neighbors=3)
 
 # leave one out cross validation
 loo = LeaveOneOut()
@@ -56,5 +58,10 @@ sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', cbar=False)
 plt.xlabel('Predicted Labels')
 plt.ylabel('True Labels')
 plt.title('Confusion Matrix')
-plt.show()
-
+plt.savefig('confusion_matrix_from_main.png')
+"""
+Mean Score: 0.9642857142857143
+Accuracy: 0.9642857142857143
+Precision: 0.9642857142857143
+Recall: 1.0
+"""
